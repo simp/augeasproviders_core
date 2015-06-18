@@ -178,7 +178,7 @@ Puppet::Type.type(:augeasprovider).provide(:default) do
       augopen(true, *args, &block)
     end
   end
- 
+
   # Define a method with a block passed to #augopen!
   #
   # @param [Symbol] method the name of the method to create
@@ -206,7 +206,7 @@ Puppet::Type.type(:augeasprovider).provide(:default) do
   # If sublabel is given, values of matching nodes beneath the
   # label node will be returned in an array.  If sublabel is :seq, values of
   # nodes matching a numbered seq will be returned.
-  # 
+  #
   # :hash causes the getter to return a hash of the value of each matching
   # label node against the value of each sublabel node.
   #
@@ -439,21 +439,21 @@ Puppet::Type.type(:augeasprovider).provide(:default) do
     label || path.split("/")[-1].split("[")[0]
   end
 
-  # Automatically quote a value
+  # Determine which quote is needed
   #
   # @param [String] value the value to quote
   # @param [String] oldvalue the optional old value, used to auto-detect existing quoting
   # @return [String] the quoted value
   # @api public
-  def self.quoteit(value, resource = nil, oldvalue = nil)
+  def self.whichquote(value, resource = nil, oldvalue = nil)
     oldquote = readquote oldvalue
- 
+
     if resource and resource.parameters.include? :quoted
       quote = resource[:quoted]
     else
       quote = :auto
     end
- 
+
     if quote == :auto
       quote = if oldquote
         oldquote
@@ -463,17 +463,28 @@ Puppet::Type.type(:augeasprovider).provide(:default) do
         :none
       end
     end
- 
+
     case quote
     when :double
-      "\"#{value}\""
+      '"'
     when :single
-      "'#{value}'"
+      "'"
     else
-      value
+      ''
     end
   end
- 
+
+  # Automatically quote a value
+  #
+  # @param [String] value the value to quote
+  # @param [String] oldvalue the optional old value, used to auto-detect existing quoting
+  # @return [String] the quoted value
+  # @api public
+  def self.quoteit(value, resource = nil, oldvalue = nil)
+    quote = whichquote(value, resource, oldvalue)
+    "#{quote}#{value}#{quote}"
+  end
+
   # Detect what type of quoting a value uses
   #
   # @param [String] value the value to be analyzed
@@ -549,7 +560,7 @@ Puppet::Type.type(:augeasprovider).provide(:default) do
   # Gets the path expression representing the file being managed.
   #
   # If supplied with a resource, this will represent the file identified by
-  # the resource, else the default file that the provider manages. 
+  # the resource, else the default file that the provider manages.
   #
   # @param [Puppet::Resource] resource resource being evaluated
   # @return [String] path expression representing the file being managed
@@ -565,7 +576,7 @@ Puppet::Type.type(:augeasprovider).provide(:default) do
   end
 
   # Automatically unquote a value
-  # 
+  #
   # @param [String] value the value to unquote
   # @return [String] the unquoted value
   # @api public
@@ -611,7 +622,7 @@ Puppet::Type.type(:augeasprovider).provide(:default) do
   end
 
   # Sets the post_resource_eval class hook for Puppet
-  # This is only used with Puppet > 3.4.0    
+  # This is only used with Puppet > 3.4.0
   # and allows to clean the shared Augeas handler.
   def self.post_resource_eval
     augclose!(aug_handler)
@@ -815,6 +826,16 @@ Puppet::Type.type(:augeasprovider).provide(:default) do
     self.class.path_label(aug, path)
   end
 
+  # Determine which quote is needed
+  #
+  # @param [String] value the value to quote
+  # @param [String] oldvalue the optional old value, used to auto-detect existing quoting
+  # @return [String] the quoted value
+  # @api public
+  def whichquote(value, oldvalue = nil)
+    self.class.whichquote(value, self.resource, oldvalue)
+  end
+
   # Automatically quote a value
   #
   # @param [String] value the value to quote
@@ -878,7 +899,7 @@ Puppet::Type.type(:augeasprovider).provide(:default) do
   end
 
   # Automatically unquote a value
-  # 
+  #
   # @param [String] value the value to unquote
   # @return [String] the unquoted value
   # @api public

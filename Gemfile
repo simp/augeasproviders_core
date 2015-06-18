@@ -32,6 +32,5 @@ group :development do
   gem 'beaker', :require => false, :git => 'https://github.com/puppetlabs/beaker', :ref => 'dbac20fe9'
   gem 'beaker-rspec', :require => false
   gem 'vagrant-wrapper', :require => false
-
-  gem 'coveralls' unless RUBY_VERSION =~ /^1\.8/
+  gem 'simp-rake-helpers',       :require => false
 end
